@@ -1,0 +1,263 @@
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.List;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+/**
+ *
+ * @author Yasmin
+ */
+
+public class manipulandobanco {
+    
+     public void adicionarPessoa(int id, String nome, String cidade) {
+        String sql = "INSERT INTO Pessoa(ID, Nome, Cidade) VALUES(?, ?, ?)";
+
+        try (Connection conn = conexão.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            pstmt.setString(2, nome);
+            pstmt.setString(3, cidade);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void adicionarTelefone(int numero, int ddd, String operadora, String promocao) {
+        String sql = "INSERT INTO Telefone(Número, Estado/DDD, Operadora, Promoção) VALUES(?, ?, ?, ?)";
+
+        try (Connection conn = conexão.connect();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, numero);
+            pstmt.setInt(2, ddd);
+            pstmt.setString(3, operadora);
+            pstmt.setString(4, promocao);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+    
+    public void removerPessoa(int id) {
+    String sql = "DELETE FROM Pessoa WHERE ID = ?";
+
+    try (Connection conn = conexão.connect();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, id);
+        pstmt.executeUpdate();
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+}
+
+public void removerTelefone(int numero, int ddd) {
+    String sql = "DELETE FROM Telefone WHERE Número = ? AND Estado/DDD = ?";
+
+    try (Connection conn = conexão.connect();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, numero);
+        pstmt.setInt(2, ddd);
+        pstmt.executeUpdate();
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+}
+public void atualizarPessoa(int id, String novoNome, String novaCidade) {
+    String sql = "UPDATE Pessoa SET Nome = ?, Cidade = ? WHERE ID = ?";
+
+    try (Connection conn = conexão.connect();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, novoNome);
+        pstmt.setString(2, novaCidade);
+        pstmt.setInt(3, id);
+        pstmt.executeUpdate();
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+}
+
+public void pesquisarPessoaPorId(int id) {
+    String sql = "SELECT * FROM Pessoa WHERE ID = ?";
+
+    try (Connection conn = conexão.connect();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setInt(1, id);
+        ResultSet rs = pstmt.executeQuery();
+        
+        while (rs.next()) {
+            System.out.println(rs.getInt("ID") + "\t" +
+                               rs.getString("Nome") + "\t" +
+                               rs.getString("Cidade"));
+        }
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+}
+
+// Classe interna Pessoa
+    public static class Pessoa {
+        private int id;
+        private String nome;
+        private String cidade;
+
+        public Pessoa(int id, String nome, String cidade) {
+            this.id = id;
+            this.nome = nome;
+            this.cidade = cidade;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public void setId(int id) {
+            this.id = id;
+        }
+
+        public String getNome() {
+            return nome;
+        }
+
+        public void setNome(String nome) {
+            this.nome = nome;
+        }
+
+        public String getCidade() {
+            return cidade;
+        }
+
+        public void setCidade(String cidade) {
+            this.cidade = cidade;
+        }
+    }
+
+public void adicionarListaDePessoas(List<Pessoa> pessoas) {
+    String sql = "INSERT INTO Pessoa(ID, Nome, Cidade) VALUES(?, ?, ?)";
+
+    try (Connection conn = conexão.connect();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        for (Pessoa pessoa : pessoas) {
+            pstmt.setInt(1, pessoa.getId());
+            pstmt.setString(2, pessoa.getNome());
+            pstmt.setString(3, pessoa.getCidade());
+            pstmt.addBatch();
+        }
+        pstmt.executeBatch();
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+}
+
+
+
+
+public void buscarPessoasPorNome(String nomeParcial) {
+    String sql = "SELECT * FROM Pessoa WHERE Nome LIKE ?";
+
+    try (Connection conn = conexão.connect();
+         PreparedStatement pstmt = conn.prepareStatement(sql)) {
+        pstmt.setString(1, "%" + nomeParcial + "%");
+        ResultSet rs = pstmt.executeQuery();
+
+        while (rs.next()) {
+            System.out.println(rs.getInt("ID") + "\t" +
+                               rs.getString("Nome") + "\t" +
+                               rs.getString("Cidade"));
+        }
+    } catch (SQLException e) {
+        System.out.println(e.getMessage());
+    }
+}
+
+
+/*public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL);
+    } */
+  public void imprimirTabelaPessoa() {
+        String sql = "SELECT * FROM Pessoa"; // Consulta para obter todos os dados da tabela Pessoa
+        
+        try (Connection conn = conexão.getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            
+            // Imprime o cabeçalho
+            System.out.println("ID  \t  Nome    \tCidade");
+            System.out.println("-------------------------------");
+            
+            // Processa o ResultSet
+            while (rs.next()) {
+                int id = rs.getInt("ID");
+                String nome = rs.getString("Nome");
+                String cidade = rs.getString("Cidade");
+                System.out.println(id + "\t" + nome + "   \t" + cidade);
+            }
+        } catch (SQLException e) {
+            System.out.println("Erro ao consultar a tabela Pessoa: " + e.getMessage());
+        }
+    }
+
+  
+  
+  /* public static void inserirpessoatelefone(String[] args) {
+        Connection conn = null;
+        try {
+            // Estabelece a conexão
+            conn = DriverManager.getConnection("jdbc:sqlite:C:/Users/nome/Desktop/Lista-Telefonica-BD.db");
+            conn.setAutoCommit(false); // Desativa o auto-commit
+
+            // SQL para inserção de dados
+            String sqlPessoa = "INSERT INTO Pessoa(ID, Nome, Cidade) VALUES(?, ?, ?)";
+            String sqlTelefone = "INSERT INTO Telefone(Número, Estado/DDD, Operadora, Promoção) VALUES(?, ?, ?, ?)";
+
+            try (PreparedStatement pstmtPessoa = conn.prepareStatement(sqlPessoa);
+                 PreparedStatement pstmtTelefone = conn.prepareStatement(sqlTelefone)) {
+
+                // Inserir a pessoa
+                pstmtPessoa.setInt(1, 1);
+                pstmtPessoa.setString(2, "João Silva");
+                pstmtPessoa.setString(3, "São Paulo");
+                pstmtPessoa.executeUpdate();
+
+                // Inserir o telefone
+                pstmtTelefone.setInt(1, 987654321);
+                pstmtTelefone.setInt(2, 11);
+                pstmtTelefone.setString(3, "Vivo");
+                pstmtTelefone.setString(4, "Plano A");
+                pstmtTelefone.executeUpdate();
+
+                // Confirmar transação
+                conn.commit();
+                System.out.println("Dados inseridos com sucesso!");
+
+            } catch (SQLException e) {
+                // Reverter a transação em caso de erro
+                System.out.println("Erro ao inserir dados: " + e.getMessage());
+                if (conn != null) {
+                    try {
+                        conn.rollback();
+                        System.out.println("Transação revertida com sucesso.");
+                    } catch (SQLException rollbackEx) {
+                        System.out.println("Erro ao reverter transação: " + rollbackEx.getMessage());
+                    }
+                }
+            }
+
+        } catch (SQLException e) {
+            System.out.println("Erro ao conectar ao banco de dados: " + e.getMessage());
+        } finally {
+            // Fechar a conexão
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true); // Restaurar o auto-commit
+                    conn.close();
+                } catch (SQLException closeEx) {
+                    System.out.println("Erro ao fechar a conexão: " + closeEx.getMessage());
+                }
+            }
+        }
+    }*/
+}
+  
